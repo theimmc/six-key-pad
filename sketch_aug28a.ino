@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 int buttonPins[6] = { 4, 5, 6, 7, 8, 9 } ;
 unsigned long pin_state[6] = { 0, 0, 0, 0, 0, 0 };
 int keycode[2][6] = { { 0, KEY_UP_ARROW, 0, KEY_LEFT_ARROW, KEY_DOWN_ARROW, KEY_RIGHT_ARROW },
@@ -16,10 +18,14 @@ void setup() {
   }
 
   pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
+  shift_status = EEPROM.read(0);
+  if (shift_status != 1) shift_status = 0;
+  EEPROM.write(0, shift_status);
+  digitalWrite(ledPin, (shift_status == 0 ? LOW : HIGH));
+  
   Keyboard.begin();
-  Serial.begin(9600);
-  Serial.println("Hello, world!");
+//  Serial.begin(9600);
+//  Serial.println("Hello, world!");
 }
 
 bool debounce(unsigned long t_now, unsigned long t_prev) {
@@ -66,6 +72,7 @@ void loop() {
           if (cnt == 0) {
             shift_status = 1 - shift_status;
             digitalWrite(ledPin, (shift_status == 0 ? LOW : HIGH));
+            EEPROM.write(0, shift_status);
           }
         }
         pin_state[cnt] = tick_now;
@@ -73,5 +80,5 @@ void loop() {
     }
   }
 
-  delay(3);
+  delay(1);
 }
